@@ -1,15 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback } from 'react'
 import type { User } from '../types'
 import api from '../services/api'
 
 interface AuthContextType {
   user: User | null
-  token: string | null
-  loading: boolean
-  error: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string, role?: 'admin' | 'employee') => Promise<void>
+  role: 'admin' | 'employee' | null
+  login: (user: User) => void
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -61,28 +59,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const register = async (
-    name: string,
-    email: string,
-    password: string,
-    role: 'admin' | 'employee' = 'employee'
-  ) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const { data } = await api.post('/auth/register', { name, email, password, role })
-      persist(data.token, data.user)
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed'
-      setError(message)
-      throw new Error(message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const login = (user: User) => setUser(user)
+  const logout = () => setUser(null)
+  const refreshUser = useCallback(async () => {
+    // no-op for now — state is updated directly after punch in/out
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ user, role: user?.role ?? null, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

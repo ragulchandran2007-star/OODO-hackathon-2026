@@ -1,7 +1,4 @@
-﻿import React, { useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
-
-type Mode = 'login' | 'register'
+import React from 'react'
 
 const AuthModal: React.FC = () => {
   const { login, register, loading, error } = useAuth()
