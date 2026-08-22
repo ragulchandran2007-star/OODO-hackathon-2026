@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { X, Clock, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Clock, Save, User, Calendar } from 'lucide-react';
 import { AttendanceStatus, Employee } from '../../types';
 import { api } from '../../services/api';
 
@@ -8,31 +8,10 @@ interface ManualAttendanceModalProps {
   onSaved: () => void;
 }
 
-// Same parsing logic used in AttendanceTracker.tsx, kept local so this modal
-// has no cross-file dependency. If you already extracted a shared utils file,
-// swap these two functions for an import instead of duplicating them.
-function parseTimeToMinutes(t?: string): number | null {
-  if (!t) return null;
-  const m = t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-  if (!m) return null;
-  let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
-  const ap = m[3]?.toUpperCase();
-  if (ap === 'PM' && h !== 12) h += 12;
-  if (ap === 'AM' && h === 12) h = 0;
-  return h * 60 + min;
-}
-
-function computeDurationHours(checkIn?: string, checkOut?: string): number {
-  const inM = parseTimeToMinutes(checkIn);
-  const outM = parseTimeToMinutes(checkOut);
-  if (inM === null || outM === null) return 0;
-  let diff = outM - inM;
-  if (diff < 0) diff += 24 * 60;
-  return Math.round((diff / 60) * 100) / 100;
-}
-
-export const ManualAttendanceModal: React.FC<ManualAttendanceModalProps> = ({ onClose, onSaved }) => {
+export const ManualAttendanceModal: React.FC<ManualAttendanceModalProps> = ({
+  onClose,
+  onSaved
+}) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmpId, setSelectedEmpId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -51,13 +30,6 @@ export const ManualAttendanceModal: React.FC<ManualAttendanceModalProps> = ({ on
     loadEmps();
   }, []);
 
-  const usesTimes = status === 'Present' || status === 'Half-day';
-  // Previously hardcoded to 8.5 / 4 hrs regardless of what was typed in the
-  // Check In / Check Out fields. Now derived from the actual entered times,
-  // so the manual entry lines up with what the Admin day view will display
-  // for Work Hours / Extra Hours.
-  const previewDuration = usesTimes ? computeDurationHours(checkInTime, checkOutTime) : 0;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const emp = employees.find(e => e.id === selectedEmpId);
@@ -71,9 +43,9 @@ export const ManualAttendanceModal: React.FC<ManualAttendanceModalProps> = ({ on
         employeeName: emp.name,
         department: emp.jobDetails.department,
         date,
-        checkInTime: usesTimes ? checkInTime : undefined,
-        checkOutTime: usesTimes ? checkOutTime : undefined,
-        durationHours: usesTimes ? previewDuration : 0,
+        checkInTime: status === 'Present' || status === 'Half-day' ? checkInTime : undefined,
+        checkOutTime: status === 'Present' || status === 'Half-day' ? checkOutTime : undefined,
+        durationHours: status === 'Present' ? 8.5 : status === 'Half-day' ? 4 : 0,
         status,
         notes,
         location: 'Office HQ'
@@ -135,40 +107,33 @@ export const ManualAttendanceModal: React.FC<ManualAttendanceModalProps> = ({ on
               className="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-indigo-600"
             >
               <option value="Present">Present (Full Day)</option>
-              <option value="Half-day">Half-day</option>
+              <option value="Half-day">Half-day (4 Hours)</option>
               <option value="Absent">Absent (Unexcused)</option>
               <option value="Leave">On Approved Leave</option>
             </select>
           </div>
 
-          {usesTimes && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Check In Time</label>
-                  <input
-                    type="text"
-                    value={checkInTime}
-                    onChange={e => setCheckInTime(e.target.value)}
-                    placeholder="09:00 AM"
-                    className="w-full text-xs p-2 rounded-lg border border-slate-300"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Check Out Time</label>
-                  <input
-                    type="text"
-                    value={checkOutTime}
-                    onChange={e => setCheckOutTime(e.target.value)}
-                    placeholder="05:30 PM"
-                    className="w-full text-xs p-2 rounded-lg border border-slate-300"
-                  />
-                </div>
+          {(status === 'Present' || status === 'Half-day') && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Punch In Time</label>
+                <input
+                  type="text"
+                  value={checkInTime}
+                  onChange={e => setCheckInTime(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-300"
+                />
               </div>
-              <p className="text-[11px] text-slate-500">
-                Duration to be saved: <span className="font-semibold text-slate-700">{previewDuration} hrs</span>
-              </p>
-            </>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Punch Out Time</label>
+                <input
+                  type="text"
+                  value={checkOutTime}
+                  onChange={e => setCheckOutTime(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-300"
+                />
+              </div>
+            </div>
           )}
 
           <div>
