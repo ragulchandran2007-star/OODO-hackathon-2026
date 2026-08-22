@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { X, Calendar, Send, AlertCircle } from 'lucide-react';
 import { LeaveType } from '../../types';
 import { useAuth } from '../../context/AuthContext';
