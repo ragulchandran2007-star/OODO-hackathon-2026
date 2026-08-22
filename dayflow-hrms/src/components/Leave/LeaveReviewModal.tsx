@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle2, XCircle, Calendar, User, MessageSquare } from 'lucide-react';
 import { LeaveRequest } from '../../types';
 import { api } from '../../services/api';

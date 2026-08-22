@@ -1,144 +1,216 @@
-import axios from 'axios';
-import type { AttendanceRecord, Employee } from '../types';
+import { Employee, AttendanceRecord, LeaveRequest, PayrollRecord, AppNotification, DashboardStats } from '../types';
 
-// ---------------------------------------------------------------------------
-// Mock data — used as fallback when the backend routes aren't ready yet.
-// ---------------------------------------------------------------------------
-const today = new Date().toISOString().split('T')[0];
-const thisMonth = today.slice(0, 7);
+const API_BASE = '/api';
 
-const MOCK_EMPLOYEES: Employee[] = [
-  {
-    id: 'emp-001', employeeId: 'EMP001', name: 'Arjun Mehta', email: 'arjun@dayflow.in',
-    jobDetails: { department: 'Engineering', position: 'Software Engineer', workLocation: 'Office HQ' },
-  },
-  {
-    id: 'emp-002', employeeId: 'EMP002', name: 'Priya Nair', email: 'priya@dayflow.in',
-    jobDetails: { department: 'Design', position: 'UI/UX Designer', workLocation: 'Office HQ' },
-  },
-  {
-    id: 'emp-003', employeeId: 'EMP003', name: 'Rohit Sharma', email: 'rohit@dayflow.in',
-    jobDetails: { department: 'HR', position: 'HR Manager', workLocation: 'Remote' },
-  },
-  {
-    id: 'emp-004', employeeId: 'EMP004', name: 'Sneha Kapoor', email: 'sneha@dayflow.in',
-    jobDetails: { department: 'Sales', position: 'Sales Executive', workLocation: 'Office HQ' },
-  },
-];
-
-function genMockAttendance(): AttendanceRecord[] {
-  const records: AttendanceRecord[] = [];
-  const [year, month] = thisMonth.split('-').map(Number);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const statuses: AttendanceRecord['status'][] = ['Present', 'Present', 'Present', 'Half-day', 'Leave', 'Absent'];
-
-  MOCK_EMPLOYEES.forEach(emp => {
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      if (date > today) continue;
-      const dow = new Date(date).getDay();
-      if (dow === 0 || dow === 6) continue;
-
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const hasTime = status === 'Present' || status === 'Half-day';
-      records.push({
-        id: `${emp.id}-${date}`,
-        userId: emp.id,
-        employeeId: emp.employeeId,
-        employeeName: emp.name,
-        department: emp.jobDetails.department,
-        date,
-        checkInTime: hasTime ? '09:00 AM' : undefined,
-        checkOutTime: hasTime && status === 'Present' ? '06:00 PM' : hasTime ? '01:00 PM' : undefined,
-        status,
-        location: emp.jobDetails.workLocation,
-        durationHours: status === 'Present' ? 9 : status === 'Half-day' ? 4 : 0,
-      });
-    }
-  });
-  return records;
-}
-
-const MOCK_ATTENDANCE: AttendanceRecord[] = genMockAttendance();
-
-const axiosInstance = axios.create({ baseURL: '/api' });
-
-// Named export — components import: { api } from '../../services/api'
 export const api = {
-  getEmployees: async (): Promise<Employee[]> => {
-    try {
-      const res = await axiosInstance.get('/employees');
-      return res.data;
-    } catch {
-      return MOCK_EMPLOYEES;
+  // Auth
+  login: async (email: string, password: string): Promise<{ token: string; user: Employee }> => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to login');
     }
+    return res.json();
   },
 
-  getAttendance: async (params?: { userId?: string }): Promise<AttendanceRecord[]> => {
-    try {
-      const res = await axiosInstance.get('/attendance', { params });
-      return res.data;
-    } catch {
-      if (params?.userId) return MOCK_ATTENDANCE.filter(r => r.userId === params.userId);
-      return MOCK_ATTENDANCE;
+  register: async (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }): Promise<{ token: string; user: Employee }> => {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to register');
     }
+    return res.json();
   },
 
-  checkIn: async (userId: string, notes: string, location: string): Promise<AttendanceRecord> => {
-    try {
-      const res = await axiosInstance.post('/attendance/checkin', { userId, notes, location });
-      return res.data;
-    } catch {
-      const now = new Date();
-      const existing = MOCK_ATTENDANCE.find(r => r.userId === userId && r.date === today);
-      if (existing) {
-        existing.checkInTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        existing.status = 'Present';
-        return existing;
-      }
-      const emp = MOCK_EMPLOYEES.find(e => e.id === userId);
-      const record: AttendanceRecord = {
-        id: `${userId}-${today}`,
-        userId, employeeId: emp?.employeeId ?? userId,
-        employeeName: emp?.name ?? 'Unknown',
-        department: emp?.jobDetails.department ?? '',
-        date: today,
-        checkInTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'Present', notes, location,
-      };
-      MOCK_ATTENDANCE.push(record);
-      return record;
-    }
+  // Employees
+  getEmployees: async (params?: { department?: string; search?: string; status?: string }): Promise<Employee[]> => {
+    const query = new URLSearchParams();
+    if (params?.department) query.append('department', params.department);
+    if (params?.search) query.append('search', params.search);
+    if (params?.status) query.append('status', params.status);
+    
+    const res = await fetch(`${API_BASE}/employees?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch employees');
+    return res.json();
+  },
+
+  getEmployeeById: async (id: string): Promise<Employee> => {
+    const res = await fetch(`${API_BASE}/employees/${id}`);
+    if (!res.ok) throw new Error('Failed to fetch employee');
+    return res.json();
+  },
+
+  createEmployee: async (empData: Partial<Employee>): Promise<Employee> => {
+    const res = await fetch(`${API_BASE}/employees`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(empData)
+    });
+    if (!res.ok) throw new Error('Failed to create employee');
+    return res.json();
+  },
+
+  updateEmployee: async (id: string, updates: Partial<Employee>): Promise<Employee> => {
+    const res = await fetch(`${API_BASE}/employees/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update employee');
+    return res.json();
+  },
+
+  deleteEmployee: async (id: string): Promise<{ success: boolean }> => {
+    const res = await fetch(`${API_BASE}/employees/${id}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error('Failed to delete employee');
+    return res.json();
+  },
+
+  // Attendance
+  getAttendance: async (params?: { date?: string; userId?: string; employeeId?: string }): Promise<AttendanceRecord[]> => {
+    const query = new URLSearchParams();
+    if (params?.date) query.append('date', params.date);
+    if (params?.userId) query.append('userId', params.userId);
+    if (params?.employeeId) query.append('employeeId', params.employeeId);
+
+    const res = await fetch(`${API_BASE}/attendance?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch attendance');
+    return res.json();
+  },
+
+  checkIn: async (userId: string, notes?: string, location?: string): Promise<AttendanceRecord> => {
+    const res = await fetch(`${API_BASE}/attendance/checkin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, notes, location })
+    });
+    if (!res.ok) throw new Error('Failed to check in');
+    return res.json();
   },
 
   checkOut: async (userId: string): Promise<AttendanceRecord> => {
-    try {
-      const res = await axiosInstance.post('/attendance/checkout', { userId });
-      return res.data;
-    } catch {
-      const now = new Date();
-      const existing = MOCK_ATTENDANCE.find(r => r.userId === userId && r.date === today);
-      if (existing) {
-        existing.checkOutTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return existing;
-      }
-      return { id: `${userId}-${today}`, userId, date: today, status: 'Present',
-        checkOutTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-    }
+    const res = await fetch(`${API_BASE}/attendance/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    if (!res.ok) throw new Error('Failed to check out');
+    return res.json();
   },
 
   addManualAttendance: async (data: Partial<AttendanceRecord>): Promise<AttendanceRecord> => {
-    try {
-      const res = await axiosInstance.post('/attendance/manual', data);
-      return res.data;
-    } catch {
-      const idx = MOCK_ATTENDANCE.findIndex(r => r.userId === data.userId && r.date === data.date);
-      if (idx !== -1) MOCK_ATTENDANCE.splice(idx, 1);
-      const record = { ...data, id: `manual-${Date.now()}` } as AttendanceRecord;
-      MOCK_ATTENDANCE.push(record);
-      return record;
-    }
+    const res = await fetch(`${API_BASE}/attendance/manual`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to record attendance');
+    return res.json();
   },
-};
 
-export default axiosInstance;
+  updateAttendance: async (id: string, updates: Partial<AttendanceRecord>): Promise<AttendanceRecord> => {
+    const res = await fetch(`${API_BASE}/attendance/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update attendance');
+    return res.json();
+  },
+
+  // Leaves
+  getLeaves: async (params?: { userId?: string; status?: string }): Promise<LeaveRequest[]> => {
+    const query = new URLSearchParams();
+    if (params?.userId) query.append('userId', params.userId);
+    if (params?.status) query.append('status', params.status);
+
+    const res = await fetch(`${API_BASE}/leaves?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch leaves');
+    return res.json();
+  },
+
+  applyLeave: async (data: { userId: string; leaveType: string; startDate: string; endDate: string; totalDays: number; reason: string }): Promise<LeaveRequest> => {
+    const res = await fetch(`${API_BASE}/leaves`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to apply leave');
+    return res.json();
+  },
+
+  reviewLeave: async (id: string, data: { status: 'Approved' | 'Rejected'; reviewerNotes?: string; reviewerName?: string }): Promise<LeaveRequest> => {
+    const res = await fetch(`${API_BASE}/leaves/${id}/review`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to review leave');
+    return res.json();
+  },
+
+  // Payroll
+  getPayroll: async (params?: { month?: string; employeeId?: string }): Promise<PayrollRecord[]> => {
+    const query = new URLSearchParams();
+    if (params?.month) query.append('month', params.month);
+    if (params?.employeeId) query.append('employeeId', params.employeeId);
+
+    const res = await fetch(`${API_BASE}/payroll?${query.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch payroll');
+    return res.json();
+  },
+
+  generatePayroll: async (month: string): Promise<{ success: boolean; count: number; records: PayrollRecord[] }> => {
+    const res = await fetch(`${API_BASE}/payroll/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ month })
+    });
+    if (!res.ok) throw new Error('Failed to generate payroll');
+    return res.json();
+  },
+
+  updatePayroll: async (id: string, updates: Partial<PayrollRecord>): Promise<PayrollRecord> => {
+    const res = await fetch(`${API_BASE}/payroll/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) throw new Error('Failed to update payroll');
+    return res.json();
+  },
+
+  // Analytics
+  getAnalytics: async (): Promise<{
+    stats: DashboardStats;
+    departmentCounts: Record<string, number>;
+    recentLeaves: LeaveRequest[];
+    todayAttendance: AttendanceRecord[];
+  }> => {
+    const res = await fetch(`${API_BASE}/analytics`);
+    if (!res.ok) throw new Error('Failed to fetch analytics');
+    return res.json();
+  },
+
+  // Notifications
+  getNotifications: async (userId?: string): Promise<AppNotification[]> => {
+    const query = userId ? `?userId=${userId}` : '';
+    const res = await fetch(`${API_BASE}/notifications${query}`);
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    return res.json();
+  },
+
+  markNotificationRead: async (id: string): Promise<void> => {
+    await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PUT' });
+  }
+};

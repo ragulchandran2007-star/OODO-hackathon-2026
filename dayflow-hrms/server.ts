@@ -1,22 +1,47 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import { connectDB } from './server/db'
-import router from './server/routes'
-import authRouter from './server/routes/auth.routes'
+import express from 'express';
+import path from 'path';
+import { createServer as createViteServer } from 'vite';
+import apiRouter from './server/routes';
 
-dotenv.config()
+async function startServer() {
+  const app = express();
+  const PORT = 3000;
 
-const app = express()
-const PORT = process.env.PORT || 3001
+  // Middleware for parsing JSON
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(cors())
-app.use(express.json())
-app.use('/api/auth', authRouter) // Auth module — mounted separately to avoid merge conflicts in routes.ts
-app.use('/api', router)
+  // API Routes
+  app.use('/api', apiRouter);
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`)
-  })
-})
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      service: 'Dayflow HRMS API',
+      timestamp: new Date().toISOString(),
+      database: 'MongoDB / In-Memory Active'
+    });
+  });
+
+  // Vite middleware for development & Static serving for production
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Dayflow HRMS Server running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();
