@@ -1,0 +1,8 @@
+{
+  "name": "Dayflow HRMS",
+  "description": "Dayflow Human Resource Management System with Employee Onboarding, Profile Management, Attendance Tracking, Leave Approvals, and Payroll Visibility.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
