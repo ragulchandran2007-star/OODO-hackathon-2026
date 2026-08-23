@@ -9,7 +9,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   login: (email: string, password?: string, role?: UserRole) => Promise<void>;
-  register: (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }) => Promise<void>;
+  register: (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }) => Promise<{ token: string; user: Employee }>;
   logout: () => void;
   switchUser: (email: string) => Promise<void>;
   updateCurrentUserProfile: (updates: Partial<Employee>) => Promise<void>;
@@ -77,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.user);
       setToken(res.token);
       localStorage.setItem('dayflow_user_email', res.user.email);
+      return res;
     } finally {
       setLoading(false);
     }

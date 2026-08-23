@@ -71,7 +71,11 @@ export const AnalyticsReports: React.FC = () => {
   const maxDept = Math.max(1, ...deptChart.map(d => d.value));
   const compensationChart = payroll.length
     ? payroll.map(p => ({ label: p.employeeName.split(' ')[0], gross: p.grossSalary, net: p.netSalary }))
-    : employees.map(e => ({ label: e.name.split(' ')[0], gross: e.salaryStructure.grossSalary, net: e.salaryStructure.netSalary }));
+    : employees.map(e => ({
+        label: e.name.split(' ')[0],
+        gross: e.salaryStructure.basic + e.salaryStructure.hra + e.salaryStructure.allowances,
+        net: e.salaryStructure.netSalary
+      }));
   const maxComp = Math.max(1, ...compensationChart.map(d => d.gross));
 
   return (
