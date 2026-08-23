@@ -1,341 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --app-bg: #090912;
-    --surface: rgba(255, 255, 255, 0.9);
-    --surface-soft: rgba(255, 255, 255, 0.72);
-    --surface-dark: rgba(16, 18, 35, 0.78);
-    --border: rgba(255, 255, 255, 0.16);
-    --primary: #6d5dfc;
-    --primary-strong: #4f46e5;
-    --accent: #14d7b8;
-    --text-strong: #f8fafc;
-    --text-ink: #07111f;
-    --muted: #8ea0c4;
-    --focus: rgba(167, 139, 250, 0.72);
-  }
+/* ---------------------------------------------------------------------------
+   HRMS VISUAL THEME REFRESH DESIGN SYSTEM
+   - Background: #F7F8F5
+   - Primary Accent: #10B981 (Emerald Green)
+   - Cards: White background, rounded-2xl / rounded-3xl, soft subtle shadows
+   --------------------------------------------------------------------------- */
 
-  body {
-    @apply text-slate-900 antialiased min-h-screen selection:bg-indigo-100 selection:text-indigo-900;
-    background: var(--app-bg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
+:root {
+  --bg-app: #F7F8F5;
+  --bg-card: #FFFFFF;
+  --accent-primary: #10B981;
+  --accent-primary-hover: #059669;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-@layer components {
-  .app-shell {
-    background:
-      radial-gradient(circle at 16% 14%, rgba(109, 93, 252, 0.3), transparent 28%),
-      radial-gradient(circle at 82% 30%, rgba(20, 215, 184, 0.18), transparent 24%),
-      linear-gradient(135deg, #080912 0%, #121329 52%, #090912 100%);
-  }
-
-  .liquid-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .liquid-ether-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 18% 16%, rgba(109, 93, 252, 0.28), transparent 30%),
-      radial-gradient(circle at 86% 28%, rgba(20, 215, 184, 0.16), transparent 26%),
-      linear-gradient(135deg, #070812 0%, #111229 52%, #080912 100%);
-  }
-
-  .liquid-ether-backdrop canvas {
-    opacity: 0.9;
-  }
-
-  .liquid-ether-static {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 22% 22%, rgba(109, 93, 252, 0.42), transparent 34%),
-      radial-gradient(circle at 82% 36%, rgba(20, 215, 184, 0.24), transparent 30%),
-      radial-gradient(circle at 72% 84%, rgba(37, 99, 235, 0.24), transparent 28%);
-  }
-
-  .liquid-backdrop::before,
-  .liquid-backdrop::after {
-    content: "";
-    position: absolute;
-    width: 48vw;
-    height: 48vw;
-    min-width: 420px;
-    min-height: 420px;
-    border-radius: 45% 55% 62% 38% / 52% 40% 60% 48%;
-    filter: blur(34px);
-    opacity: 0.5;
-    transform: translateZ(0);
-    animation: liquid-drift 18s ease-in-out infinite alternate;
-  }
-
-  .liquid-backdrop::before {
-    right: -12vw;
-    top: 6vh;
-    background: linear-gradient(135deg, rgba(128, 75, 255, 0.85), rgba(37, 99, 235, 0.34), rgba(20, 215, 184, 0.2));
-  }
-
-  .liquid-backdrop::after {
-    left: 10vw;
-    bottom: -20vw;
-    background: linear-gradient(135deg, rgba(25, 211, 255, 0.34), rgba(109, 93, 252, 0.7), rgba(255, 255, 255, 0.08));
-    animation-delay: -7s;
-  }
-
-  .app-header {
-    background: rgba(12, 15, 31, 0.78);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.26);
-    backdrop-filter: blur(18px);
-  }
-
-  .app-header .text-slate-900,
-  .app-header .text-slate-700,
-  .app-header .text-slate-600 {
-    color: rgba(248, 250, 252, 0.94) !important;
-  }
-
-  .app-header .text-slate-500,
-  .app-header .text-slate-400 {
-    color: rgba(203, 213, 225, 0.76) !important;
-  }
-
-  .app-header .bg-slate-100,
-  .app-header .bg-indigo-50 {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(255, 255, 255, 0.14) !important;
-  }
-
-  .app-sidebar {
-    position: sticky;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(13, 17, 37, 0.92), rgba(17, 20, 42, 0.82));
-    border-right: 1px solid var(--border);
-    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(22px);
-  }
-
-  .app-sidebar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 20% 0%, rgba(109, 93, 252, 0.42), transparent 28%),
-      radial-gradient(circle at 90% 88%, rgba(20, 215, 184, 0.22), transparent 26%);
-    pointer-events: none;
-  }
-
-  .app-sidebar > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .sidebar-identity,
-  .sidebar-image-box {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
-    overflow: hidden;
-  }
-
-  .bg-white,
-  .bg-slate-50 {
-    background: rgba(15, 19, 39, 0.78) !important;
-    color: var(--text-strong);
-    border-color: rgba(255, 255, 255, 0.13) !important;
-    backdrop-filter: blur(16px);
-  }
-
-  .bg-white .text-slate-900,
-  .bg-white .text-slate-800,
-  .bg-slate-50 .text-slate-900,
-  .bg-slate-50 .text-slate-800 {
-    color: rgba(248, 250, 252, 0.95) !important;
-  }
-
-  .bg-white .text-slate-700,
-  .bg-white .text-slate-600,
-  .bg-slate-50 .text-slate-700,
-  .bg-slate-50 .text-slate-600 {
-    color: rgba(226, 232, 240, 0.84) !important;
-  }
-
-  .bg-white .text-slate-500,
-  .bg-white .text-slate-400,
-  .bg-slate-50 .text-slate-500,
-  .bg-slate-50 .text-slate-400 {
-    color: rgba(203, 213, 225, 0.72) !important;
-  }
-
-  .bg-slate-100,
-  .bg-indigo-50,
-  .bg-emerald-50,
-  .bg-amber-50,
-  .bg-purple-50 {
-    background: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .page-title {
-    color: var(--text-strong);
-    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.26);
-  }
-
-  .page-subtitle {
-    color: rgba(226, 232, 240, 0.78);
-  }
-
-  .login-card {
-    background: rgba(14, 17, 34, 0.68);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    color: var(--text-strong);
-    backdrop-filter: blur(10px);
-  }
-
-  .login-card .bg-slate-900 {
-    background: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  .login-card .bg-white,
-  .login-card .bg-slate-50 {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: var(--text-strong);
-  }
-
-  .login-card label,
-  .login-card .text-slate-700,
-  .login-card .text-slate-900 {
-    color: rgba(248, 250, 252, 0.94) !important;
-  }
-
-  .login-card .text-slate-500,
-  .login-card .text-slate-400 {
-    color: rgba(203, 213, 225, 0.74) !important;
-  }
-
-  input,
-  select,
-  textarea {
-    background: rgba(9, 12, 25, 0.7) !important;
-    color: rgba(248, 250, 252, 0.95) !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
-  }
-
-  input::placeholder,
-  textarea::placeholder {
-    color: rgba(203, 213, 225, 0.56) !important;
-  }
-
-  input:focus,
-  select:focus,
-  textarea:focus,
-  button:focus-visible {
-    outline: 2px solid var(--focus) !important;
-    outline-offset: 2px;
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  button:disabled {
-    cursor: not-allowed;
-    filter: saturate(0.8);
-  }
-
-  table {
-    min-width: 760px;
-  }
-
-  thead,
-  .bg-slate-50.border-b {
-    background: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  th {
-    color: rgba(226, 232, 240, 0.78) !important;
-  }
-
-  td {
-    color: rgba(226, 232, 240, 0.86);
-  }
-
-  tbody tr:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
-  }
-
-  #printable-payslip,
-  #printable-payslip.bg-white,
-  #printable-payslip .bg-white,
-  #printable-payslip .bg-slate-50 {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    backdrop-filter: none;
-  }
-
-  #printable-payslip .text-slate-900,
-  #printable-payslip .text-slate-800,
-  #printable-payslip .text-slate-700 {
-    color: #0f172a !important;
-  }
-
-  #printable-payslip .text-slate-500,
-  #printable-payslip .text-slate-400 {
-    color: #64748b !important;
-  }
-
-  .border-slate-200,
-  .border-slate-100,
-  .border-slate-300 {
-    border-color: rgba(15, 23, 42, 0.12) !important;
-  }
-
-  .rounded-2xl,
-  .rounded-xl {
-    box-shadow: 0 18px 45px rgba(4, 7, 18, 0.12);
-  }
-
-  .bg-indigo-600 {
-    background: linear-gradient(135deg, #7c5cff, #4f46e5) !important;
-  }
-
-  .hover\:bg-indigo-700:hover {
-    background: linear-gradient(135deg, #8b6cff, #5b54f0) !important;
-  }
-
-  .bg-emerald-600 {
-    background: linear-gradient(135deg, #05a987, #038669) !important;
-  }
+body {
+  background-color: #F7F8F5 !important;
+  color: #0F172A;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes liquid-drift {
-  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  100% { transform: translate3d(-5vw, 4vh, 0) rotate(16deg) scale(1.08); }
+/* Default Card Style Override */
+.card-soft {
+  background-color: #FFFFFF;
+  border-radius: 1.25rem; /* 20px */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.2s ease-in-out;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .liquid-backdrop::before,
-  .liquid-backdrop::after {
-    animation: none;
-  }
+.card-soft:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-@media (max-width: 900px) {
-  .app-sidebar {
-    width: 14rem;
-  }
-}
-
-/* Custom scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -344,11 +46,26 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: #94a3b8;
+}
+
+/* Table styling enhancements */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
 }
 
 @media print {
@@ -358,8 +75,5 @@
   }
   .no-print {
     display: none !important;
-  }
-  .print-only {
-    display: block !important;
   }
 }

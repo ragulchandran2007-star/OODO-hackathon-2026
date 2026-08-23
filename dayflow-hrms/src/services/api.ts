@@ -30,28 +30,6 @@ export const api = {
     return res.json();
   },
 
-  requestPasswordReset: async (email: string): Promise<{ success: boolean; delivered: boolean; message: string; resetUrl?: string }> => {
-    const res = await fetch(`${API_BASE}/auth/request-password-reset`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to request password reset');
-    return data;
-  },
-
-  resetPassword: async (token: string, password: string): Promise<{ success: boolean; message: string }> => {
-    const res = await fetch(`${API_BASE}/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to reset password');
-    return data;
-  },
-
   // Employees
   getEmployees: async (params?: { department?: string; search?: string; status?: string }): Promise<Employee[]> => {
     const query = new URLSearchParams();

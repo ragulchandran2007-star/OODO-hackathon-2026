@@ -8,11 +8,9 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password?: string) => Promise<void>;
-  register: (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }) => Promise<{ token: string; user: Employee } | undefined>;
+  login: (email: string, password?: string, role?: UserRole) => Promise<void>;
+  register: (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }) => Promise<void>;
   logout: () => void;
-  justLoggedIn: boolean;
-  clearJustLoggedIn: () => void;
   switchUser: (email: string) => Promise<void>;
   updateCurrentUserProfile: (updates: Partial<Employee>) => Promise<void>;
   activeTab: string;
@@ -24,32 +22,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<Employee | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>('mock-jwt-token');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [justLoggedIn, setJustLoggedIn] = useState<boolean>(false);
 
-  // Only restore a session if the user actually authenticated before
-  // (persisted token/email from a real login). No silent auto-login.
+  // Initialize with default HR admin or stored user
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const storedToken = localStorage.getItem('dayflow_token');
-        const storedEmail = localStorage.getItem('dayflow_user_email');
-        if (storedToken && storedEmail) {
-          const employees = await api.getEmployees();
-          const matched = employees.find(e => e.email === storedEmail);
-          if (matched) {
-            setUser(matched);
-            setToken(storedToken);
-          } else {
-            localStorage.removeItem('dayflow_token');
-            localStorage.removeItem('dayflow_user_email');
-          }
+        const employees = await api.getEmployees();
+        if (employees.length > 0) {
+          const storedEmail = localStorage.getItem('dayflow_user_email');
+          const matched = storedEmail ? employees.find(e => e.email === storedEmail) : null;
+          setUser(matched || employees[0]); // Default to first employee (Sarah Jenkins - HR Admin)
         }
       } catch (err) {
-        console.error('Failed to restore session', err);
+        console.error('Failed to load initial user', err);
       } finally {
         setLoading(false);
       }
@@ -57,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string = 'password123') => {
+  const login = async (email: string, password: string = 'password123', _role?: UserRole) => {
     setLoading(true);
     setError(null);
     try {
@@ -65,11 +54,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(res.user);
       setToken(res.token);
       localStorage.setItem('dayflow_user_email', res.user.email);
-      localStorage.setItem('dayflow_token', res.token);
-      setJustLoggedIn(true);
     } catch (err: any) {
-      setError(err.message || 'Invalid Login ID/Email or password');
-      throw err;
+      // Fallback find employee
+      const employees = await api.getEmployees();
+      const found = employees.find(e => e.email.toLowerCase() === email.toLowerCase());
+      if (found) {
+        setUser(found);
+        localStorage.setItem('dayflow_user_email', found.email);
+      } else {
+        setError(err.message || 'Login failed');
+        throw new Error(err.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -77,18 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: { employeeId?: string; name: string; email: string; password: string; role: 'admin' | 'employee' }) => {
     setLoading(true);
-    setError(null);
     try {
       const res = await api.register(data);
       setUser(res.user);
       setToken(res.token);
       localStorage.setItem('dayflow_user_email', res.user.email);
-      localStorage.setItem('dayflow_token', res.token);
-      setJustLoggedIn(true);
-      return res;
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-      throw err;
     } finally {
       setLoading(false);
     }
@@ -96,14 +84,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('dayflow_user_email');
-    localStorage.removeItem('dayflow_token');
     setUser(null);
     setToken(null);
-    setError(null);
-    setJustLoggedIn(false);
   };
-
-  const clearJustLoggedIn = () => setJustLoggedIn(false);
 
   const switchUser = async (email: string) => {
     setLoading(true);
@@ -157,9 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateCurrentUserProfile,
         activeTab,
         setActiveTab,
-        refreshUser,
-        justLoggedIn,
-        clearJustLoggedIn
+        refreshUser
       }}
     >
       {children}

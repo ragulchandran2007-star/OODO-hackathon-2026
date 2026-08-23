@@ -14,3 +14,6 @@ This repository contains our project developed for the OODO Hackathon 2026.
 ## Status
 
 Project development will begin after the problem statement is announced.
+-updated Attendnance 
+-updated Employess
+- updated Authentication
