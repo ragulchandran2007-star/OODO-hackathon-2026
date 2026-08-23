@@ -26,6 +26,7 @@ export const AttendanceTracker: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showManualModal, setShowManualModal] = useState(false);
   const [punchLoading, setPunchLoading] = useState(false);
@@ -100,8 +101,31 @@ export const AttendanceTracker: React.FC = () => {
   // Filter records
   const filteredRecords = attendanceList.filter(record => {
     if (selectedStatus !== 'All' && record.status !== selectedStatus) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesName = record.employeeName?.toLowerCase().includes(q);
+      const matchesId = record.employeeId?.toLowerCase().includes(q);
+      if (!matchesName && !matchesId) return false;
+    }
     return true;
   });
+
+  const STANDARD_WORK_HOURS = 8;
+
+  const getExtraHours = (record: AttendanceRecord): number => {
+    if (!record.durationHours) return 0;
+    const extra = record.durationHours - STANDARD_WORK_HOURS;
+    return extra > 0 ? Math.round(extra * 100) / 100 : 0;
+  };
+
+  // Employee-facing summary stats (Count of days present, Leaves count, Total working days)
+  const employeeStats = React.useMemo(() => {
+    if (isAdmin) return null;
+    const presentDays = attendanceList.filter(r => r.status === 'Present' || r.status === 'Half-day').length;
+    const leaveDays = attendanceList.filter(r => r.status === 'Leave').length;
+    const totalWorkingDays = attendanceList.length;
+    return { presentDays, leaveDays, totalWorkingDays };
+  }, [attendanceList, isAdmin]);
 
   return (
     <div className="space-y-6">
@@ -181,24 +205,54 @@ export const AttendanceTracker: React.FC = () => {
         </div>
       </div>
 
+      {/* Employee Summary Stats (Count of days present / Leaves count / Total working days) */}
+      {!isAdmin && employeeStats && (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+            <p className="text-2xl font-bold text-emerald-600">{employeeStats.presentDays}</p>
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Count of Days Present</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+            <p className="text-2xl font-bold text-amber-600">{employeeStats.leaveDays}</p>
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Leaves Count</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+            <p className="text-2xl font-bold text-slate-900">{employeeStats.totalWorkingDays}</p>
+            <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Total Working Days</p>
+          </div>
+        </div>
+      )}
+
       {/* Filter Controls for Admin / User */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
           {isAdmin && (
-            <div className="w-full md:w-64">
-              <select
-                value={selectedEmployeeId}
-                onChange={e => setSelectedEmployeeId(e.target.value)}
-                className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white"
-              >
-                <option value="All">All Employees</option>
-                {employees.map(e => (
-                  <option key={e.id} value={e.employeeId}>
-                    {e.name} ({e.employeeId})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <>
+              <div className="relative w-full md:w-56">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search by name or ID..."
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-indigo-600"
+                />
+              </div>
+              <div className="w-full md:w-64">
+                <select
+                  value={selectedEmployeeId}
+                  onChange={e => setSelectedEmployeeId(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white"
+                >
+                  <option value="All">All Employees</option>
+                  {employees.map(e => (
+                    <option key={e.id} value={e.employeeId}>
+                      {e.name} ({e.employeeId})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
@@ -235,6 +289,7 @@ export const AttendanceTracker: React.FC = () => {
                 <th className="px-5 py-3">Punch In</th>
                 <th className="px-5 py-3">Punch Out</th>
                 <th className="px-5 py-3">Duration</th>
+                {isAdmin && <th className="px-5 py-3">Extra Hours</th>}
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3">Location / Remarks</th>
               </tr>
@@ -242,13 +297,13 @@ export const AttendanceTracker: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-xs text-slate-400">
+                  <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-xs text-slate-400">
                     Loading attendance entries...
                   </td>
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-xs text-slate-400">
+                  <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-xs text-slate-400">
                     No attendance records found for the selected filter.
                   </td>
                 </tr>
@@ -274,6 +329,15 @@ export const AttendanceTracker: React.FC = () => {
                     <td className="px-5 py-3 text-slate-700 font-medium">
                       {record.durationHours ? `${record.durationHours} hrs` : '-'}
                     </td>
+                    {isAdmin && (
+                      <td className="px-5 py-3 font-medium">
+                        {getExtraHours(record) > 0 ? (
+                          <span className="text-emerald-700">+{getExtraHours(record)} hrs</span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-5 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         record.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :

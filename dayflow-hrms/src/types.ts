@@ -1,6 +1,14 @@
 export type UserRole = 'admin' | 'employee';
 
+export interface SalaryComponent {
+  id: string;
+  name: string;
+  percentOfBasic?: number; // percentage of Basic Salary (for HRA/Bonus/LTA style components)
+  amount: number; // computed monthly amount
+}
+
 export interface SalaryStructure {
+  // Legacy simple fields (kept for backward compatibility with older records/payroll calc)
   basic: number;
   hra: number;
   allowances: number;
@@ -8,6 +16,23 @@ export interface SalaryStructure {
   pfDeduction: number;
   otherDeductions: number;
   netSalary: number;
+
+  // Wireframe-accurate wage-based structure
+  monthlyWage?: number;
+  yearlyWage?: number;
+  basicPercent?: number; // % of wage
+  hraPercent?: number; // % of basic
+  standardAllowancePercent?: number; // % of wage
+  performanceBonusPercent?: number; // % of basic
+  leaveTravelAllowancePercent?: number; // % of basic
+  fixedAllowance?: number; // wage - sum of all other components (auto-computed)
+  workingDaysPerWeek?: number;
+  breakTimeHours?: number;
+  pfEmployeeAmount?: number;
+  pfEmployeePercent?: number;
+  pfEmployerAmount?: number;
+  pfEmployerPercent?: number;
+  professionalTax?: number;
 }
 
 export interface EmployeeDocument {

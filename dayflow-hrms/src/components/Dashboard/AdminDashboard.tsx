@@ -187,7 +187,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Action Queues & Roster */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending Leave Approvals Queue (2 cols) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4 min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -261,7 +261,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* Department Breakdown & Quick Stats (1 col) */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4 min-w-0">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-indigo-600" />

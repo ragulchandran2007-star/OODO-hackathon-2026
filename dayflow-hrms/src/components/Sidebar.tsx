@@ -6,10 +6,7 @@ import {
   CalendarOff, 
   Wallet, 
   BarChart3, 
-  FileArchive, 
-  ShieldAlert,
   Sparkles,
-  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -58,21 +55,14 @@ export const Sidebar: React.FC = () => {
       icon: BarChart3,
       badge: null,
       adminOnly: false
-    },
-    {
-      id: 'project-export',
-      label: 'Project ZIP & Flow',
-      icon: FileArchive,
-      badge: 'MongoDB',
-      adminOnly: false
     }
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] select-none">
+    <aside className="app-sidebar w-64 text-slate-200 flex-shrink-0 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] select-none">
       <div className="p-3 space-y-6 overflow-y-auto">
         {/* Role & Workspace Indicator */}
-        <div className="bg-slate-800/80 rounded-xl p-3 border border-slate-700/60">
+        <div className="sidebar-identity rounded-xl p-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Current Portal</span>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -123,8 +113,8 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Info Box */}
-      <div className="p-3 border-t border-slate-800">
-        <div className="bg-slate-800/40 rounded-lg p-2.5 border border-slate-800 text-[11px] text-slate-400">
+      <div className="p-3 border-t border-white/10">
+        <div className="sidebar-image-box rounded-lg p-2.5 text-[11px] text-slate-300">
           <div className="flex items-center gap-1.5 text-indigo-300 font-medium mb-1">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Full-Stack Architecture</span>

@@ -1,18 +1,57 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 import { db } from './db';
 
 const router = Router();
+const resetTokens = new Map<string, { employeeId: string; expiresAt: number }>();
+
+const sendResetEmail = async (email: string, resetUrl: string) => {
+  if (!process.env.SMTP_HOST) {
+    console.info(`[password-reset] SMTP not configured. Development reset link for ${email}: ${resetUrl}`);
+    return { delivered: false, resetUrl };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: process.env.SMTP_USER && process.env.SMTP_PASS
+      ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      : undefined
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || 'Dayflow HRMS <no-reply@dayflow.local>',
+    to: email,
+    subject: 'Reset your Dayflow HRMS password',
+    text: `Use this secure link to reset your Dayflow HRMS password. It expires in 30 minutes:\n\n${resetUrl}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+        <h2>Reset your Dayflow HRMS password</h2>
+        <p>Use this secure link to create a new password. It expires in 30 minutes.</p>
+        <p><a href="${resetUrl}" style="display:inline-block;background:#6d5dfc;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700">Reset password</a></p>
+        <p style="font-size:12px;color:#6b7280">If you did not request this, you can ignore this email.</p>
+      </div>
+    `
+  });
+
+  return { delivered: true };
+};
 
 // ================= AUTH ROUTES =================
 router.post('/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Login ID/Email and password are required' });
   }
 
-  const user = db.findEmployeeByEmail(email);
+  const user = db.findEmployeeByLoginIdentifier(email);
   if (!user || user.password !== password) {
-    return res.status(401).json({ error: 'Invalid email or password' });
+    return res.status(401).json({ error: 'Invalid Login ID/Email or password' });
   }
 
   const { password: _, ...userWithoutPassword } = user;
@@ -50,6 +89,58 @@ router.post('/auth/register', (req: Request, res: Response) => {
     token: `jwt-token-${newEmp.id}-${Date.now()}`,
     user: userWithoutPassword
   });
+});
+
+router.post('/auth/request-password-reset', async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return res.status(400).json({ error: 'A valid email address is required' });
+  }
+
+  const user = db.findEmployeeByEmail(email);
+  if (!user) {
+    return res.status(404).json({ error: 'No account was found for that email address' });
+  }
+
+  const token = crypto.randomBytes(24).toString('hex');
+  resetTokens.set(token, {
+    employeeId: user.id,
+    expiresAt: Date.now() + 1000 * 60 * 30
+  });
+
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const resetUrl = `${origin}/?resetToken=${token}`;
+  const mail = await sendResetEmail(user.email, resetUrl);
+
+  return res.json({
+    success: true,
+    delivered: mail.delivered,
+    message: mail.delivered
+      ? 'Password reset instructions were sent to your email.'
+      : 'Password reset was created. Configure SMTP_HOST to send email automatically.',
+    resetUrl: mail.delivered ? undefined : resetUrl
+  });
+});
+
+router.post('/auth/reset-password', (req: Request, res: Response) => {
+  const { token, password } = req.body;
+  if (!token || !password || password.length < 6) {
+    return res.status(400).json({ error: 'A valid reset token and password of at least 6 characters are required' });
+  }
+
+  const reset = resetTokens.get(token);
+  if (!reset || reset.expiresAt < Date.now()) {
+    resetTokens.delete(token);
+    return res.status(400).json({ error: 'This reset link is invalid or expired' });
+  }
+
+  const updated = db.updateEmployee(reset.employeeId, { password } as any);
+  resetTokens.delete(token);
+  if (!updated) {
+    return res.status(404).json({ error: 'Account not found' });
+  }
+
+  return res.json({ success: true, message: 'Password updated. You can now sign in.' });
 });
 
 router.get('/auth/me', (req: Request, res: Response) => {
