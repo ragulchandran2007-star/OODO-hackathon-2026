@@ -15,6 +15,7 @@ import { PayrollManagement } from './components/Payroll/PayrollManagement';
 import { AnalyticsReports } from './components/Analytics/AnalyticsReports';
 import { ProjectExportModal } from './components/Export/ProjectExportModal';
 import { AuthModal } from './components/Auth/AuthModal';
+import { GlobalLiquidEther } from './components/GlobalLiquidEther';
 import { Employee } from './types';
 
 const MainLayout: React.FC = () => {
@@ -28,24 +29,28 @@ const MainLayout: React.FC = () => {
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 flex flex-col font-sans text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+      <GlobalLiquidEther />
+      <div className="absolute inset-0 bg-slate-100/88 backdrop-blur-[1px] pointer-events-none" />
+
       {/* Global Application Header */}
-      <Header
-        onOpenProjectExport={() => setShowExportModal(true)}
-        onOpenAuth={() => setShowAuthModal(true)}
-        onOpenProfile={() => {
-          if (user) setSelectedProfileEmployee(user);
-        }}
-      />
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <Header
+          onOpenProjectExport={() => setShowExportModal(true)}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onOpenProfile={() => {
+            if (user) setSelectedProfileEmployee(user);
+          }}
+        />
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 flex">
-        {/* Navigation Sidebar */}
-        <Sidebar />
+        {/* Main Workspace Layout */}
+        <div className="flex-1 flex">
+          {/* Navigation Sidebar */}
+          <Sidebar />
 
-        {/* Dynamic Main Stage View */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
+          {/* Dynamic Main Stage View */}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-6">
             
             {/* 1. DASHBOARD VIEW */}
             {activeTab === 'dashboard' && (
@@ -110,8 +115,9 @@ const MainLayout: React.FC = () => {
               </div>
             )}
 
-          </div>
-        </main>
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Global Modals */}

@@ -24,6 +24,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.liquid-ether-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(37, 99, 235, 0.42), transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(20, 215, 184, 0.34), transparent 28%),
+    linear-gradient(135deg, #020617 0%, #111827 48%, #0f172a 100%);
+}
+
+.liquid-ether-static {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 22% 24%, rgba(37, 99, 235, 0.42), transparent 32%),
+    radial-gradient(circle at 72% 70%, rgba(20, 215, 184, 0.28), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #111827 48%, #0f172a 100%);
+}
+
 /* Default Card Style Override */
 .card-soft {
   background-color: #FFFFFF;
