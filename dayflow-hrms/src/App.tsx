@@ -29,10 +29,7 @@ const MainLayout: React.FC = () => {
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 flex flex-col font-sans text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
-      <GlobalLiquidEther />
-      <div className="absolute inset-0 bg-slate-100/88 backdrop-blur-[1px] pointer-events-none" />
-
+    <div className="min-h-screen bg-gradient-to-br from-navy-950 via-slate-900 to-navy-900 flex flex-col font-sans text-slate-100 antialiased selection:bg-cyan-500 selection:text-white">
       {/* Global Application Header */}
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header
@@ -98,16 +95,16 @@ const MainLayout: React.FC = () => {
 
             {/* 7. PROJECT EXPORT & ARCHITECTURE */}
             {activeTab === 'project-export' && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 backdrop-blur-sm shadow-lg">
                 <div className="max-w-3xl space-y-4">
-                  <h1 className="text-2xl font-bold text-slate-900">Project Flow & Source Code Package</h1>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <h1 className="text-2xl font-bold text-slate-100">Project Flow & Source Code Package</h1>
+                  <p className="text-sm text-slate-400 leading-relaxed">
                     Dayflow HRMS is built with a decoupled MongoDB backend and a responsive React frontend.
                     You can inspect the full architecture or download the ready-to-run ZIP archive below.
                   </p>
                   <button
                     onClick={() => setShowExportModal(true)}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all"
+                    className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs rounded-xl shadow-sm transition-all"
                   >
                     Open Flow Diagram & ZIP Packager
                   </button>

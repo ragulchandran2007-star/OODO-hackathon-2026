@@ -2,23 +2,34 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   HRMS VISUAL THEME REFRESH DESIGN SYSTEM
-   - Background: #F7F8F5
-   - Primary Accent: #10B981 (Emerald Green)
-   - Cards: White background, rounded-2xl / rounded-3xl, soft subtle shadows
+   HRMS VISUAL THEME - DARK NAVY & CYAN
+   - Background: Navy gradient with subtle blue/cyan/teal glow
+   - Primary Accent: Cyan & Blue (#0891b2, #2563eb)
+   - Secondary Accent: Teal (#14b8a6)
+   - Cards: Dark navy semi-transparent with subtle borders
+   - Text: Light colors for dark background
    --------------------------------------------------------------------------- */
 
 :root {
-  --bg-app: #F7F8F5;
-  --bg-card: #FFFFFF;
-  --accent-primary: #10B981;
-  --accent-primary-hover: #059669;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-alt: #334155;
+  --accent-primary: #0891b2;
+  --accent-primary-hover: #06b6d4;
+  --accent-secondary: #2563eb;
+  --accent-secondary-hover: #1d4ed8;
+  --accent-success: #14b8a6;
+  --accent-success-hover: #0d9488;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --border-color: rgba(51, 65, 85, 0.5);
 }
 
 body {
-  background-color: #F7F8F5 !important;
-  color: #0F172A;
+  background-color: #0a0f1e !important;
+  background-image: linear-gradient(135deg, #0f172a 0%, #1a2a3a 50%, #0f172a 100%);
+  color: #f1f5f9;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -46,15 +57,17 @@ body {
 
 /* Default Card Style Override */
 .card-soft {
-  background-color: #FFFFFF;
+  background-color: rgba(30, 41, 59, 0.7);
   border-radius: 1.25rem; /* 20px */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(51, 65, 85, 0.5);
   transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(10px);
 }
 
 .card-soft:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.15), 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-color: rgba(8, 145, 178, 0.3);
 }
 
 /* Custom Scrollbars */
@@ -66,11 +79,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(51, 65, 85, 0.6);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(8, 145, 178, 0.6);
 }
 
 /* Table styling enhancements */
@@ -85,7 +98,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: rgba(51, 65, 85, 0.4);
 }
 
 @media print {
@@ -96,4 +109,37 @@ tbody tr:hover {
   .no-print {
     display: none !important;
   }
+}
+
+/* Header Styling */
+.app-header {
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Liquid Ether Backdrop */
+.liquid-ether-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+.liquid-ether-backdrop canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.liquid-ether-static {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1a2a3a 50%, #0f172a 100%);
 }

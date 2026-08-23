@@ -37,7 +37,7 @@ export const WelcomeTransition: React.FC<WelcomeTransitionProps> = ({ userName, 
             stage === 'check' ? 'scale-90 opacity-0' : 'scale-100 opacity-100'
           }`}
         >
-          <CheckCircle2 className="w-9 h-9 text-emerald-400" strokeWidth={2} />
+          <CheckCircle2 className="w-9 h-9 text-teal-300" strokeWidth={2} />
         </div>
         <div
           className={`transition-all duration-500 delay-100 ${
@@ -54,3 +54,10 @@ export const WelcomeTransition: React.FC<WelcomeTransitionProps> = ({ userName, 
     </div>
   );
 };
+
+
+
+
+
+
+

@@ -79,13 +79,13 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-slate-800/60/50 rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
         
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-900/80 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-cyan-600 flex items-center justify-center text-white">
               <UserPlus className="w-4 h-4" />
             </div>
             <div>
@@ -95,7 +95,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -106,11 +106,11 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           {/* Section 1: Basic & Credentials */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-indigo-600" /> Identity & Access
+              <User className="w-3.5 h-3.5 text-cyan-400" /> Identity & Access
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Full Legal Name *</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Full Legal Name *</label>
                 <input
                   type="text"
                   required
@@ -122,7 +122,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Corporate Email *</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Corporate Email *</label>
                 <input
                   type="email"
                   required
@@ -134,7 +134,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Employee ID</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Employee ID</label>
                 <input
                   type="text"
                   value={employeeId}
@@ -144,7 +144,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Role / Access Level</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Role / Access Level</label>
                 <select
                   value={role}
                   onChange={e => setRole(e.target.value as UserRole)}
@@ -158,13 +158,13 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </div>
 
           {/* Section 2: Job Details */}
-          <div className="pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-slate-700/30">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-indigo-600" /> Organizational Details
+              <Briefcase className="w-3.5 h-3.5 text-cyan-400" /> Organizational Details
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Designation Title</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Designation Title</label>
                 <input
                   type="text"
                   value={title}
@@ -174,7 +174,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Department</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Department</label>
                 <select
                   value={department}
                   onChange={e => setDepartment(e.target.value)}
@@ -190,7 +190,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Employment Model</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Employment Model</label>
                 <select
                   value={employmentType}
                   onChange={e => setEmploymentType(e.target.value as any)}
@@ -204,7 +204,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Work Location</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Work Location</label>
                 <select
                   value={workLocation}
                   onChange={e => setWorkLocation(e.target.value as any)}
@@ -219,13 +219,13 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </div>
 
           {/* Section 3: Salary Tier */}
-          <div className="pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-slate-700/30">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-              <DollarSign className="w-3.5 h-3.5 text-indigo-600" /> Monthly Salary Baseline
+              <DollarSign className="w-3.5 h-3.5 text-cyan-400" /> Monthly Salary Baseline
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Basic Salary ($)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Basic Salary ($)</label>
                 <input
                   type="number"
                   value={basicSalary}
@@ -235,7 +235,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">HRA ($)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">HRA ($)</label>
                 <input
                   type="number"
                   value={hra}
@@ -245,7 +245,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Allowances ($)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Allowances ($)</label>
                 <input
                   type="number"
                   value={allowances}
@@ -260,18 +260,18 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div className="pt-4 border-t border-slate-700/30 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+              className="px-4 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800/60/40 rounded-lg"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5"
             >
               <Save className="w-3.5 h-3.5" />
               {loading ? 'Creating...' : 'Complete Onboarding'}
@@ -282,3 +282,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     </div>
   );
 };
+
+
+
+
+
+
+

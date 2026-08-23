@@ -84,7 +84,7 @@ export const AnalyticsReports: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="page-title text-xl font-bold tracking-tight flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-indigo-600" />
+            <BarChart3 className="w-5 h-5 text-cyan-400" />
             Executive Analytics & Workforce Reports
           </h1>
           <p className="page-subtitle text-xs">
@@ -94,7 +94,7 @@ export const AnalyticsReports: React.FC = () => {
 
         <button
           onClick={exportEmployeesCSV}
-          className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all self-start sm:self-auto cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all self-start sm:self-auto cursor-pointer"
         >
           <Download className="w-4 h-4" />
           Export Workforce CSV Report
@@ -103,34 +103,34 @@ export const AnalyticsReports: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-slate-800/60/50 p-5 rounded-xl border border-slate-700/50 shadow-xs">
           <span className="text-xs font-medium text-slate-500">Workforce Headcount</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{stats?.totalEmployees || 0}</span>
-            <span className="text-xs text-emerald-600 font-semibold">+100% active</span>
+            <span className="text-2xl font-bold text-slate-100">{stats?.totalEmployees || 0}</span>
+            <span className="text-xs text-teal-400 font-semibold">+100% active</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">Across all global locations</p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-slate-800/60/50 p-5 rounded-xl border border-slate-700/50 shadow-xs">
           <span className="text-xs font-medium text-slate-500">Daily Attendance Rate</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-emerald-600">{stats?.attendanceRate || 0}%</span>
+            <span className="text-2xl font-bold text-teal-400">{stats?.attendanceRate || 0}%</span>
             <span className="text-xs text-slate-500 font-medium">punctuality</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">{stats?.presentToday || 0} staff checked in</p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-slate-800/60/50 p-5 rounded-xl border border-slate-700/50 shadow-xs">
           <span className="text-xs font-medium text-slate-500">Pending Leave Pipeline</span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-amber-600">{stats?.pendingLeavesCount || 0}</span>
-            <span className="text-xs text-amber-700 font-medium">pending approval</span>
+            <span className="text-xs text-amber-400 font-medium">pending approval</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">Approval turnaround &lt; 24h</p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-slate-800/60/50 p-5 rounded-xl border border-slate-700/50 shadow-xs">
           <span className="text-xs font-medium text-slate-500">Monthly Compensation Run</span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-purple-700">
@@ -143,9 +143,9 @@ export const AnalyticsReports: React.FC = () => {
 
       {/* Visual Analytics Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-violet-300" />
               Payroll Gross vs Net
             </h2>
@@ -186,10 +186,10 @@ export const AnalyticsReports: React.FC = () => {
         </div>
 
         {/* Department Headcount Bar Graph */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-indigo-600" />
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-cyan-400" />
               Department Workforce Distribution
             </h2>
             <p className="text-xs text-slate-500">Staff density across departments</p>
@@ -202,10 +202,10 @@ export const AnalyticsReports: React.FC = () => {
               return (
                 <div key={dept} className="space-y-1">
                   <div className="flex justify-between text-xs font-medium">
-                    <span className="text-slate-700">{dept}</span>
-                    <span className="text-slate-900 font-bold">{numCount} ({pct}%)</span>
+                    <span className="text-slate-300">{dept}</span>
+                    <span className="text-slate-100 font-bold">{numCount} ({pct}%)</span>
                   </div>
-                  <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="w-full h-3 rounded-full bg-slate-800/60/40 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-full transition-all duration-500"
                       style={{ width: `${pct}%` }}
@@ -217,9 +217,9 @@ export const AnalyticsReports: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-cyan-300" />
               Department Report Graph
             </h2>
@@ -245,35 +245,35 @@ export const AnalyticsReports: React.FC = () => {
         </div>
 
         {/* Attendance & Compliance Summary */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-600" />
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-teal-400" />
               Attendance & Compliance Auditing
             </h2>
             <p className="text-xs text-slate-500">Weekly shift metrics and statutory alignment</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3.5 bg-slate-900/80/40 rounded-xl border border-slate-700/50">
               <span className="text-[11px] text-slate-500 block">Average Working Hours</span>
-              <span className="text-xl font-bold text-slate-900 mt-1 block">8.2 hrs / day</span>
-              <span className="text-[10px] text-emerald-600 font-semibold mt-1 inline-block">100% compliant</span>
+              <span className="text-xl font-bold text-slate-100 mt-1 block">8.2 hrs / day</span>
+              <span className="text-[10px] text-teal-400 font-semibold mt-1 inline-block">100% compliant</span>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3.5 bg-slate-900/80/40 rounded-xl border border-slate-700/50">
               <span className="text-[11px] text-slate-500 block">Leave Utilization</span>
-              <span className="text-xl font-bold text-indigo-700 mt-1 block">22.4%</span>
+              <span className="text-xl font-bold text-cyan-300 mt-1 block">22.4%</span>
               <span className="text-[10px] text-slate-500 mt-1 inline-block">Healthy work-life balance</span>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3.5 bg-slate-900/80/40 rounded-xl border border-slate-700/50">
               <span className="text-[11px] text-slate-500 block">Payroll Accuracy</span>
-              <span className="text-xl font-bold text-emerald-600 mt-1 block">99.9%</span>
+              <span className="text-xl font-bold text-teal-400 mt-1 block">99.9%</span>
               <span className="text-[10px] text-slate-500 mt-1 inline-block">Automated calculation</span>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3.5 bg-slate-900/80/40 rounded-xl border border-slate-700/50">
               <span className="text-[11px] text-slate-500 block">Remote / Hybrid Share</span>
               <span className="text-xl font-bold text-purple-700 mt-1 block">60.0%</span>
               <span className="text-[10px] text-slate-500 mt-1 inline-block">Hybrid workplace model</span>
@@ -284,3 +284,10 @@ export const AnalyticsReports: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
