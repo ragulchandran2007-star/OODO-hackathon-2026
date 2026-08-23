@@ -569,15 +569,41 @@ class DayflowDatabase {
     return this.employees.find(e => e.email.toLowerCase() === email.toLowerCase());
   }
 
+  findEmployeeByLoginIdentifier(identifier: string) {
+    const q = identifier.trim().toLowerCase();
+    return this.employees.find(
+      e => e.email.toLowerCase() === q || (e.employeeId && e.employeeId.toLowerCase() === q)
+    );
+  }
+
   findEmployeeById(id: string) {
     return this.employees.find(e => e.id === id || e.employeeId === id);
   }
 
+  generateLoginId(fullName: string, joinDate: string) {
+    const parts = fullName.trim().split(/\s+/);
+    const first = (parts[0] || 'XX').padEnd(2, 'X').slice(0, 2).toUpperCase();
+    const last = (parts[parts.length - 1] || 'XX').padEnd(2, 'X').slice(0, 2).toUpperCase();
+    const year = new Date(joinDate || Date.now()).getFullYear();
+    const prefix = `OI${first}${last}${year}`;
+    // Find existing serials for this exact prefix to compute the next serial number
+    const existingSerials = this.employees
+      .map(e => e.employeeId)
+      .filter(id => id && id.startsWith(prefix))
+      .map(id => parseInt(id.slice(prefix.length), 10))
+      .filter(n => !isNaN(n));
+    const nextSerial = existingSerials.length > 0 ? Math.max(...existingSerials) + 1 : 1;
+    const serial = String(nextSerial).padStart(4, '0');
+    return `${prefix}${serial}`;
+  }
+
   addEmployee(empData: any) {
     const newId = `emp-${Date.now()}`;
+    const joinDate = empData.jobDetails?.joinDate || getTodayStr();
+    const autoLoginId = this.generateLoginId(empData.name || 'New User', joinDate);
     const newEmp: Employee & { password: string } = {
       id: newId,
-      employeeId: empData.employeeId || `EMP-${Math.floor(1000 + Math.random() * 9000)}`,
+      employeeId: autoLoginId,
       name: empData.name,
       email: empData.email,
       password: empData.password || 'password123',
@@ -593,7 +619,7 @@ class DayflowDatabase {
       jobDetails: {
         title: empData.jobDetails?.title || 'Team Member',
         department: empData.jobDetails?.department || 'General',
-        joinDate: empData.jobDetails?.joinDate || getTodayStr(),
+        joinDate,
         manager: empData.jobDetails?.manager || 'Sarah Jenkins',
         employmentType: empData.jobDetails?.employmentType || 'Full-Time',
         workLocation: empData.jobDetails?.workLocation || 'Hybrid',

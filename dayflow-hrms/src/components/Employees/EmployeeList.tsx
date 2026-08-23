@@ -61,11 +61,11 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="page-title text-xl font-bold tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-600" />
             Workforce Directory ({employees.length})
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="page-subtitle text-xs">
             Browse corporate profiles, job assignments, and compensation tiers
           </p>
         </div>

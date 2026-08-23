@@ -20,17 +20,35 @@ import {
 import { Employee, EmployeeDocument } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import {
+  computeSalary,
+  toSalaryStructure,
+  DEFAULT_BASIC_PERCENT,
+  DEFAULT_HRA_PERCENT,
+  DEFAULT_STANDARD_ALLOWANCE_PERCENT,
+  DEFAULT_PERFORMANCE_BONUS_PERCENT,
+  DEFAULT_LTA_PERCENT,
+  DEFAULT_PF_EMPLOYEE_PERCENT,
+  DEFAULT_PF_EMPLOYER_PERCENT,
+  DEFAULT_PROFESSIONAL_TAX,
+  DEFAULT_WORKING_DAYS_PER_WEEK,
+  DEFAULT_BREAK_TIME_HOURS
+} from '../../utils/salaryCalc';
 
 interface EmployeeProfileModalProps {
   employee: Employee | null;
   onClose: () => void;
   onUpdated: () => void;
+  /** When true (e.g. opened from the directory card list), the profile opens
+   * in a read-only mode and editing controls are hidden, regardless of role. */
+  viewOnly?: boolean;
 }
 
 export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
   employee,
   onClose,
-  onUpdated
+  onUpdated,
+  viewOnly = false
 }) => {
   const { role: currentUserRole, user: currentUser, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'personal' | 'job' | 'salary' | 'documents'>('personal');
@@ -42,10 +60,64 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
 
   const isAdmin = currentUserRole === 'admin';
   const isOwnProfile = currentUser?.id === employee.id;
-  const canEdit = isAdmin || isOwnProfile;
+  const canEdit = !viewOnly && (isAdmin || isOwnProfile);
+  // Salary Info tab should only be visible to Admins.
+  const canSeeSalaryTab = isAdmin;
 
   // Form states
   const [formData, setFormData] = useState<Employee>({ ...employee });
+
+  // Wage-based Salary Info config (wireframe-accurate). Initialized from the
+  // employee's stored structure, falling back to sane defaults / legacy basic pay.
+  const [salaryConfig, setSalaryConfig] = useState(() => {
+    const s = employee.salaryStructure;
+    const monthlyWage = s.monthlyWage ?? (s.basic > 0 ? Math.round(s.basic / ((s.basicPercent ?? DEFAULT_BASIC_PERCENT) / 100)) : 50000);
+    return {
+      monthlyWage,
+      basicPercent: s.basicPercent ?? DEFAULT_BASIC_PERCENT,
+      hraPercent: s.hraPercent ?? DEFAULT_HRA_PERCENT,
+      standardAllowancePercent: s.standardAllowancePercent ?? DEFAULT_STANDARD_ALLOWANCE_PERCENT,
+      performanceBonusPercent: s.performanceBonusPercent ?? DEFAULT_PERFORMANCE_BONUS_PERCENT,
+      leaveTravelAllowancePercent: s.leaveTravelAllowancePercent ?? DEFAULT_LTA_PERCENT,
+      pfEmployeePercent: s.pfEmployeePercent ?? DEFAULT_PF_EMPLOYEE_PERCENT,
+      pfEmployerPercent: s.pfEmployerPercent ?? DEFAULT_PF_EMPLOYER_PERCENT,
+      professionalTax: s.professionalTax ?? DEFAULT_PROFESSIONAL_TAX,
+      workingDaysPerWeek: s.workingDaysPerWeek ?? DEFAULT_WORKING_DAYS_PER_WEEK,
+      breakTimeHours: s.breakTimeHours ?? DEFAULT_BREAK_TIME_HOURS
+    };
+  });
+
+  // Recompute every component whenever the wage or any percentage changes.
+  const computedSalary = computeSalary(salaryConfig);
+
+  // Keep formData.salaryStructure in sync with the live computed salary so
+  // Save persists the up-to-date structure (and legacy fields stay correct).
+  React.useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      salaryStructure: toSalaryStructure(computedSalary, salaryConfig)
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    salaryConfig.monthlyWage,
+    salaryConfig.basicPercent,
+    salaryConfig.hraPercent,
+    salaryConfig.standardAllowancePercent,
+    salaryConfig.performanceBonusPercent,
+    salaryConfig.leaveTravelAllowancePercent,
+    salaryConfig.pfEmployeePercent,
+    salaryConfig.pfEmployerPercent,
+    salaryConfig.professionalTax,
+    salaryConfig.workingDaysPerWeek,
+    salaryConfig.breakTimeHours
+  ]);
+
+  // If a non-admin somehow lands on the salary tab (e.g. stale state), bounce to Personal Details.
+  React.useEffect(() => {
+    if (activeTab === 'salary' && !canSeeSalaryTab) {
+      setActiveTab('personal');
+    }
+  }, [activeTab, canSeeSalaryTab]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -122,6 +194,11 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {viewOnly && (
+              <span className="px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 text-[10px] font-bold uppercase tracking-wider border border-slate-600">
+                View Only
+              </span>
+            )}
             {canEdit && !isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -161,16 +238,18 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
           >
             <Briefcase className="w-3.5 h-3.5" /> Job & Organization
           </button>
-          <button
-            onClick={() => setActiveTab('salary')}
-            className={`pb-3 px-3 border-b-2 flex items-center gap-1.5 transition-colors ${
-              activeTab === 'salary'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent hover:text-slate-900'
-            }`}
-          >
-            <DollarSign className="w-3.5 h-3.5" /> Salary Structure
-          </button>
+          {canSeeSalaryTab && (
+            <button
+              onClick={() => setActiveTab('salary')}
+              className={`pb-3 px-3 border-b-2 flex items-center gap-1.5 transition-colors ${
+                activeTab === 'salary'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent hover:text-slate-900'
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5" /> Salary Structure
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('documents')}
             className={`pb-3 px-3 border-b-2 flex items-center gap-1.5 transition-colors ${
@@ -418,141 +497,233 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
             </div>
           )}
 
-          {/* TAB 3: SALARY STRUCTURE */}
-          {activeTab === 'salary' && (
+          {/* TAB 3: SALARY INFO (wage + % component auto-calculation, per spec) */}
+          {activeTab === 'salary' && canSeeSalaryTab && (
             <div className="space-y-4">
-              <div className="p-4 bg-indigo-50/70 rounded-xl border border-indigo-100 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-semibold text-indigo-900">Total Net Monthly Take-Home</span>
-                  <p className="text-2xl font-bold text-indigo-950">
-                    ${formData.salaryStructure.netSalary.toLocaleString()}
-                  </p>
-                </div>
-                <span className="text-xs px-3 py-1 bg-indigo-600 text-white font-semibold rounded-lg">
-                  Approved 2026 Tier
-                </span>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800">
+                Salary components are calculated automatically from the Monthly Wage. Fixed Allowance
+                absorbs whatever remains so the total never exceeds the defined wage.
               </div>
 
+              {/* Wage */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <label className="block text-[11px] text-slate-600 font-semibold">Month Wage</label>
+                  <div className="flex items-baseline gap-1">
+                    <input
+                      type="number"
+                      disabled={!isAdmin || !isEditing}
+                      value={salaryConfig.monthlyWage}
+                      onChange={e => setSalaryConfig(cfg => ({ ...cfg, monthlyWage: Math.max(0, Number(e.target.value)) }))}
+                      className="w-full text-lg font-bold p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
+                    />
+                    <span className="text-xs text-slate-500 whitespace-nowrap">/ Month</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <label className="block text-[11px] text-slate-600 font-semibold">Yearly Wage</label>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-bold text-slate-900">
+                      ${computedSalary.yearlyWage.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-slate-500 whitespace-nowrap">/ Year</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400">Auto-computed as Monthly Wage × 12</p>
+                </div>
+              </div>
+
+              {/* Working schedule */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <label className="block text-[11px] text-slate-600 font-semibold mb-1">No. of working days / week</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={7}
+                    disabled={!isAdmin || !isEditing}
+                    value={salaryConfig.workingDaysPerWeek}
+                    onChange={e => setSalaryConfig(cfg => ({ ...cfg, workingDaysPerWeek: Number(e.target.value) }))}
+                    className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
+                  />
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <label className="block text-[11px] text-slate-600 font-semibold mb-1">Break Time (hrs)</label>
+                  <input
+                    type="number"
+                    step={0.5}
+                    min={0}
+                    disabled={!isAdmin || !isEditing}
+                    value={salaryConfig.breakTimeHours}
+                    onChange={e => setSalaryConfig(cfg => ({ ...cfg, breakTimeHours: Number(e.target.value) }))}
+                    className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
+                  />
+                </div>
+              </div>
+
+              {/* Salary Components */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 text-emerald-700">
+                  <DollarSign className="w-3.5 h-3.5" /> Salary Components
+                </h4>
+
+                {/* Basic Salary */}
+                <SalaryComponentRow
+                  label="Basic Salary"
+                  description="Define Basic salary from company cost, computed as % of Monthly Wage"
+                  amount={computedSalary.basic}
+                  percent={salaryConfig.basicPercent}
+                  disabled={!isAdmin || !isEditing}
+                  onPercentChange={p => setSalaryConfig(cfg => ({ ...cfg, basicPercent: p }))}
+                />
+
+                {/* HRA */}
+                <SalaryComponentRow
+                  label="House Rent Allowance"
+                  description="HRA provided to employees, computed as % of Basic Salary"
+                  amount={computedSalary.hra}
+                  percent={salaryConfig.hraPercent}
+                  disabled={!isAdmin || !isEditing}
+                  onPercentChange={p => setSalaryConfig(cfg => ({ ...cfg, hraPercent: p }))}
+                />
+
+                {/* Standard Allowance */}
+                <SalaryComponentRow
+                  label="Standard Allowance"
+                  description="A standard, fixed-ratio allowance provided as part of salary, computed as % of Wage"
+                  amount={computedSalary.standardAllowance}
+                  percent={salaryConfig.standardAllowancePercent}
+                  disabled={!isAdmin || !isEditing}
+                  onPercentChange={p => setSalaryConfig(cfg => ({ ...cfg, standardAllowancePercent: p }))}
+                />
+
+                {/* Performance Bonus */}
+                <SalaryComponentRow
+                  label="Performance Bonus"
+                  description="Variable amount paid during payroll, defined as % of Basic Salary"
+                  amount={computedSalary.performanceBonus}
+                  percent={salaryConfig.performanceBonusPercent}
+                  disabled={!isAdmin || !isEditing}
+                  onPercentChange={p => setSalaryConfig(cfg => ({ ...cfg, performanceBonusPercent: p }))}
+                />
+
+                {/* Leave Travel Allowance */}
+                <SalaryComponentRow
+                  label="Leave Travel Allowance"
+                  description="LTA paid to cover travel expenses, calculated as % of Basic Salary"
+                  amount={computedSalary.leaveTravelAllowance}
+                  percent={salaryConfig.leaveTravelAllowancePercent}
+                  disabled={!isAdmin || !isEditing}
+                  onPercentChange={p => setSalaryConfig(cfg => ({ ...cfg, leaveTravelAllowancePercent: p }))}
+                />
+
+                {/* Fixed Allowance (read-only remainder) */}
+                <div className="grid grid-cols-12 gap-2 items-center py-1.5 border-t border-slate-200 pt-2">
+                  <div className="col-span-6">
+                    <p className="text-xs font-semibold text-slate-800">Fixed Allowance</p>
+                    <p className="text-[10px] text-slate-400 leading-snug">
+                      Fixed allowance = Wage − total of all other components (auto-computed)
+                    </p>
+                  </div>
+                  <div className="col-span-3">
+                    <div className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-100 text-right font-semibold text-slate-700">
+                      ${computedSalary.fixedAllowance.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="col-span-3 text-right text-[11px] text-slate-400">/ month</div>
+                </div>
+
+                {/* Component total sanity check */}
+                <div className={`mt-1 p-2 rounded-lg text-[11px] font-semibold flex items-center justify-between ${
+                  computedSalary.componentsTotal <= computedSalary.monthlyWage + 0.01
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-700 border border-rose-200'
+                }`}>
+                  <span>Total of all components</span>
+                  <span>${computedSalary.componentsTotal.toLocaleString()} / ${computedSalary.monthlyWage.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* PF + Tax */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 text-emerald-700">
-                    <DollarSign className="w-3.5 h-3.5" /> Gross Earnings Components
+                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 text-indigo-700">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Provident Fund (PF) Contribution
                   </h4>
-                  <div>
-                    <label className="block text-[11px] text-slate-600">Basic Pay ($)</label>
-                    <input
-                      type="number"
-                      disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.basic}
-                      onChange={e => {
-                        const basic = Number(e.target.value);
-                        const gross = basic + formData.salaryStructure.hra + formData.salaryStructure.allowances;
-                        const ded = formData.salaryStructure.taxDeduction + formData.salaryStructure.pfDeduction + formData.salaryStructure.otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, basic, netSalary: gross - ded }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
-                    />
+                  <p className="text-[10px] text-slate-400 -mt-2">PF is calculated based on the Basic Salary</p>
+
+                  <div className="grid grid-cols-2 gap-2 items-end">
+                    <div>
+                      <label className="block text-[11px] text-slate-600">Employee</label>
+                      <div className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-100 font-semibold">
+                        ${computedSalary.pfEmployeeAmount.toLocaleString()} / month
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-600">Employee %</label>
+                      <input
+                        type="number"
+                        step={0.5}
+                        disabled={!isAdmin || !isEditing}
+                        value={salaryConfig.pfEmployeePercent}
+                        onChange={e => setSalaryConfig(cfg => ({ ...cfg, pfEmployeePercent: Number(e.target.value) }))}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-600">House Rent Allowance (HRA) ($)</label>
-                    <input
-                      type="number"
-                      disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.hra}
-                      onChange={e => {
-                        const hra = Number(e.target.value);
-                        const gross = formData.salaryStructure.basic + hra + formData.salaryStructure.allowances;
-                        const ded = formData.salaryStructure.taxDeduction + formData.salaryStructure.pfDeduction + formData.salaryStructure.otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, hra, netSalary: gross - ded }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-600">Special & Travel Allowances ($)</label>
-                    <input
-                      type="number"
-                      disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.allowances}
-                      onChange={e => {
-                        const allowances = Number(e.target.value);
-                        const gross = formData.salaryStructure.basic + formData.salaryStructure.hra + allowances;
-                        const ded = formData.salaryStructure.taxDeduction + formData.salaryStructure.pfDeduction + formData.salaryStructure.otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, allowances, netSalary: gross - ded }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
-                    />
+
+                  <div className="grid grid-cols-2 gap-2 items-end">
+                    <div>
+                      <label className="block text-[11px] text-slate-600">Employer</label>
+                      <div className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-100 font-semibold">
+                        ${computedSalary.pfEmployerAmount.toLocaleString()} / month
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-600">Employer %</label>
+                      <input
+                        type="number"
+                        step={0.5}
+                        disabled={!isAdmin || !isEditing}
+                        value={salaryConfig.pfEmployerPercent}
+                        onChange={e => setSalaryConfig(cfg => ({ ...cfg, pfEmployerPercent: Number(e.target.value) }))}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
                   <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 text-rose-700">
-                    <DollarSign className="w-3.5 h-3.5" /> Statutory Deductions
+                    <DollarSign className="w-3.5 h-3.5" /> Tax Deductions
                   </h4>
                   <div>
-                    <label className="block text-[11px] text-slate-600">Income Tax (TDS) ($)</label>
+                    <label className="block text-[11px] text-slate-600">Professional Tax ($ / month)</label>
                     <input
                       type="number"
                       disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.taxDeduction}
-                      onChange={e => {
-                        const taxDeduction = Number(e.target.value);
-                        const gross = formData.salaryStructure.basic + formData.salaryStructure.hra + formData.salaryStructure.allowances;
-                        const ded = taxDeduction + formData.salaryStructure.pfDeduction + formData.salaryStructure.otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, taxDeduction, netSalary: gross - ded }
-                        });
-                      }}
+                      value={salaryConfig.professionalTax}
+                      onChange={e => setSalaryConfig(cfg => ({ ...cfg, professionalTax: Number(e.target.value) }))}
                       className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-600">Provident Fund (PF / 401k) ($)</label>
-                    <input
-                      type="number"
-                      disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.pfDeduction}
-                      onChange={e => {
-                        const pfDeduction = Number(e.target.value);
-                        const gross = formData.salaryStructure.basic + formData.salaryStructure.hra + formData.salaryStructure.allowances;
-                        const ded = formData.salaryStructure.taxDeduction + pfDeduction + formData.salaryStructure.otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, pfDeduction, netSalary: gross - ded }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-600">Health Insurance & Other Deductions ($)</label>
-                    <input
-                      type="number"
-                      disabled={!isAdmin || !isEditing}
-                      value={formData.salaryStructure.otherDeductions}
-                      onChange={e => {
-                        const otherDeductions = Number(e.target.value);
-                        const gross = formData.salaryStructure.basic + formData.salaryStructure.hra + formData.salaryStructure.allowances;
-                        const ded = formData.salaryStructure.taxDeduction + formData.salaryStructure.pfDeduction + otherDeductions;
-                        setFormData({
-                          ...formData,
-                          salaryStructure: { ...formData.salaryStructure, otherDeductions, netSalary: gross - ded }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100"
-                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Professional Tax deducted from the Gross salary</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Net take-home summary */}
+              <div className="p-4 bg-indigo-50/70 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-indigo-900">Total Net Monthly Take-Home</span>
+                  <p className="text-2xl font-bold text-indigo-950">
+                    ${computedSalary.netMonthly.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-indigo-700 mt-0.5">
+                    Gross ${computedSalary.grossMonthly.toLocaleString()} − PF ${computedSalary.pfEmployeeAmount.toLocaleString()} − Tax ${computedSalary.professionalTax.toLocaleString()}
+                  </p>
+                </div>
+                <span className="text-xs px-3 py-1 bg-indigo-600 text-white font-semibold rounded-lg whitespace-nowrap">
+                  Fixed Wage
+                </span>
               </div>
             </div>
           )}
@@ -662,3 +833,40 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
     </div>
   );
 };
+
+/** A single auto-calculated salary component row: shows the computed dollar
+ * amount (read-only) alongside an editable percentage input that drives it. */
+const SalaryComponentRow: React.FC<{
+  label: string;
+  description: string;
+  amount: number;
+  percent: number;
+  disabled: boolean;
+  onPercentChange: (percent: number) => void;
+}> = ({ label, description, amount, percent, disabled, onPercentChange }) => {
+  return (
+    <div className="grid grid-cols-12 gap-2 items-center py-1.5">
+      <div className="col-span-6">
+        <p className="text-xs font-semibold text-slate-800">{label}</p>
+        <p className="text-[10px] text-slate-400 leading-snug">{description}</p>
+      </div>
+      <div className="col-span-3">
+        <div className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-slate-100 text-right font-semibold text-slate-700">
+          ${amount.toLocaleString()}
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center gap-1">
+        <input
+          type="number"
+          step={0.5}
+          disabled={disabled}
+          value={percent}
+          onChange={e => onPercentChange(Number(e.target.value))}
+          className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white disabled:bg-slate-100 text-right"
+        />
+        <span className="text-[11px] text-slate-400">%</span>
+      </div>
+    </div>
+  );
+};
+

@@ -12,25 +12,28 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { api } from '../../services/api';
-import { DashboardStats, Employee, LeaveRequest, AttendanceRecord } from '../../types';
+import { DashboardStats, Employee, PayrollRecord } from '../../types';
 
 export const AnalyticsReports: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [deptCounts, setDeptCounts] = useState<Record<string, number>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [payroll, setPayroll] = useState<PayrollRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const [analytics, emps] = await Promise.all([
+        const [analytics, emps, payrollRows] = await Promise.all([
           api.getAnalytics(),
-          api.getEmployees()
+          api.getEmployees(),
+          api.getPayroll({ month: 'August 2026' })
         ]);
         setStats(analytics.stats);
         setDeptCounts(analytics.departmentCounts);
         setEmployees(emps);
+        setPayroll(payrollRows);
       } catch (err) {
         console.error(err);
       } finally {
@@ -64,16 +67,23 @@ export const AnalyticsReports: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const deptChart = Object.entries(deptCounts).map(([label, value]) => ({ label, value: Number(value) }));
+  const maxDept = Math.max(1, ...deptChart.map(d => d.value));
+  const compensationChart = payroll.length
+    ? payroll.map(p => ({ label: p.employeeName.split(' ')[0], gross: p.grossSalary, net: p.netSalary }))
+    : employees.map(e => ({ label: e.name.split(' ')[0], gross: e.salaryStructure.grossSalary, net: e.salaryStructure.netSalary }));
+  const maxComp = Math.max(1, ...compensationChart.map(d => d.gross));
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="page-title text-xl font-bold tracking-tight flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-600" />
             Executive Analytics & Workforce Reports
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="page-subtitle text-xs">
             Real-time organizational telemetry, attendance ratios, and compensation audit
           </p>
         </div>
@@ -129,6 +139,48 @@ export const AnalyticsReports: React.FC = () => {
 
       {/* Visual Analytics Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-violet-300" />
+              Payroll Gross vs Net
+            </h2>
+            <p className="text-xs text-slate-500">Current pay period compensation comparison</p>
+          </div>
+          <div className="h-64 overflow-x-auto">
+            <svg viewBox={`0 0 ${Math.max(520, compensationChart.length * 86)} 220`} className="h-full min-w-full" role="img" aria-label="Gross and net salary bar chart">
+              <line x1="42" y1="18" x2="42" y2="178" stroke="rgba(226,232,240,.32)" />
+              <line x1="42" y1="178" x2={Math.max(500, compensationChart.length * 86)} y2="178" stroke="rgba(226,232,240,.32)" />
+              {compensationChart.map((item, index) => {
+                const x = 64 + index * 82;
+                const grossHeight = Math.max(8, (item.gross / maxComp) * 142);
+                const netHeight = Math.max(8, (item.net / maxComp) * 142);
+                return (
+                  <g key={item.label}>
+                    <rect x={x} y={178 - grossHeight} width="22" height={grossHeight} rx="5" fill="url(#grossGradient)" />
+                    <rect x={x + 28} y={178 - netHeight} width="22" height={netHeight} rx="5" fill="url(#netGradient)" />
+                    <text x={x + 25} y="203" textAnchor="middle" fill="rgba(226,232,240,.78)" fontSize="10">{item.label}</text>
+                  </g>
+                );
+              })}
+              <defs>
+                <linearGradient id="grossGradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop stopColor="#a78bfa" />
+                  <stop offset="1" stopColor="#6d5dfc" />
+                </linearGradient>
+                <linearGradient id="netGradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop stopColor="#2dd4bf" />
+                  <stop offset="1" stopColor="#0f766e" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div className="flex gap-4 text-[11px] text-slate-500">
+            <span><span className="inline-block h-2 w-2 rounded-full bg-violet-400" /> Gross</span>
+            <span><span className="inline-block h-2 w-2 rounded-full bg-teal-400" /> Net</span>
+          </div>
+        </div>
+
         {/* Department Headcount Bar Graph */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
           <div>
@@ -158,6 +210,33 @@ export const AnalyticsReports: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <FileSpreadsheet className="w-4 h-4 text-cyan-300" />
+              Department Report Graph
+            </h2>
+            <p className="text-xs text-slate-500">Headcount comparison by business unit</p>
+          </div>
+          <div className="h-56">
+            <svg viewBox="0 0 520 190" className="h-full w-full" role="img" aria-label="Department headcount report chart">
+              <line x1="36" y1="15" x2="36" y2="150" stroke="rgba(226,232,240,.32)" />
+              <line x1="36" y1="150" x2="500" y2="150" stroke="rgba(226,232,240,.32)" />
+              {deptChart.map((item, index) => {
+                const x = 58 + index * 86;
+                const h = Math.max(8, (item.value / maxDept) * 116);
+                return (
+                  <g key={item.label}>
+                    <rect x={x} y={150 - h} width="42" height={h} rx="8" fill="rgba(124,92,255,.82)" />
+                    <text x={x + 21} y={142 - h} textAnchor="middle" fill="#f8fafc" fontSize="12" fontWeight="700">{item.value}</text>
+                    <text x={x + 21} y="171" textAnchor="middle" fill="rgba(226,232,240,.78)" fontSize="9">{item.label.slice(0, 10)}</text>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
         </div>
 

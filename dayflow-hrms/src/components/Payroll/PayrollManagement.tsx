@@ -73,11 +73,11 @@ export const PayrollManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="page-title text-xl font-bold tracking-tight flex items-center gap-2">
             <Wallet className="w-5 h-5 text-indigo-600" />
             Payroll & Compensation Management
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="page-subtitle text-xs">
             {isAdmin 
               ? 'Calculate statutory salary components, process monthly disbursements, and print stubs' 
               : 'View monthly earnings breakdowns and download authenticated payslips'}
@@ -154,7 +154,7 @@ export const PayrollManagement: React.FC = () => {
       )}
 
       {/* Month Selector & Controls */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between gap-3">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-slate-600">Pay Period:</span>
           <select
