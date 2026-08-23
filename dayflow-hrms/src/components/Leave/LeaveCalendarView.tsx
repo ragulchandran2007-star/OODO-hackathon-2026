@@ -69,19 +69,19 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
   ];
 
   const statusDotColor = (status: string) =>
-    status === 'Approved' ? 'bg-emerald-500' : status === 'Rejected' ? 'bg-rose-500' : 'bg-amber-500';
+    status === 'Approved' ? 'bg-teal-500' : status === 'Rejected' ? 'bg-rose-500' : 'bg-amber-500';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-4">
+    <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs p-5 space-y-4">
       {/* Month navigation */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-900">
+        <h3 className="text-sm font-bold text-slate-100">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </h3>
         <div className="flex items-center gap-1">
           <button
             onClick={goToPrevMonth}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-slate-800/60/40 text-slate-500 cursor-pointer"
             aria-label="Previous month"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -91,13 +91,13 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
               setViewMonth(today.getMonth());
               setViewYear(today.getFullYear());
             }}
-            className="px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer"
+            className="px-2.5 py-1 text-[11px] font-semibold text-cyan-400 hover:bg-cyan-950/40 rounded-lg cursor-pointer"
           >
             Today
           </button>
           <button
             onClick={goToNextMonth}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-slate-800/60/40 text-slate-500 cursor-pointer"
             aria-label="Next month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -108,7 +108,7 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
       {/* Legend */}
       <div className="flex items-center gap-4 text-[11px] text-slate-500 flex-wrap">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Approved
+          <span className="w-2 h-2 rounded-full bg-teal-500" /> Approved
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-500" /> Pending / To Approve
@@ -141,10 +141,10 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
             <div
               key={day}
               className={`aspect-square p-1 rounded-lg border text-left flex flex-col gap-0.5 overflow-hidden ${
-                isToday ? 'border-indigo-500 bg-indigo-50/60' : 'border-slate-100 bg-slate-50/50'
+                isToday ? 'border-indigo-500 bg-cyan-950/40/60' : 'border-slate-700/30 bg-slate-900/80/40/50'
               }`}
             >
-              <span className={`text-[10px] font-semibold ${isToday ? 'text-indigo-700' : 'text-slate-500'}`}>
+              <span className={`text-[10px] font-semibold ${isToday ? 'text-cyan-300' : 'text-slate-500'}`}>
                 {day}
               </span>
               <div className="flex-1 flex flex-col gap-0.5 overflow-hidden">
@@ -154,10 +154,10 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
                     onClick={() => isAdmin && onSelectLeave(l)}
                     className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium truncate flex items-center gap-1 ${
                       l.status === 'Approved'
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-teal-950/60 text-teal-300'
                         : l.status === 'Rejected'
                         ? 'bg-rose-100 text-rose-800'
-                        : 'bg-amber-100 text-amber-800'
+                        : 'bg-amber-950/60 text-amber-300'
                     } ${isAdmin ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
                     title={`${l.employeeName} • ${l.leaveType} • ${l.status}`}
                   >
@@ -175,10 +175,17 @@ export const LeaveCalendarView: React.FC<LeaveCalendarViewProps> = ({ leaves, is
       </div>
 
       {isAdmin && (
-        <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+        <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-700/30">
           Tip: click a pending entry on the calendar to open the Approve / Reject review panel.
         </p>
       )}
     </div>
   );
 };
+
+
+
+
+
+
+

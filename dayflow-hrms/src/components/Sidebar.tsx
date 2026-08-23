@@ -59,21 +59,21 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="app-sidebar w-64 text-slate-200 flex-shrink-0 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] select-none">
+    <aside className="app-sidebar w-64 text-slate-300 flex-shrink-0 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] select-none bg-gradient-to-b from-slate-900/80 via-navy-900/50 to-slate-900/40 border-r border-slate-700/50 backdrop-blur-sm">
       <div className="p-3 space-y-6 overflow-y-auto">
         {/* Role & Workspace Indicator */}
-        <div className="sidebar-identity rounded-xl p-3">
+        <div className="sidebar-identity rounded-xl p-3 bg-slate-800/60/50 border border-slate-700/50 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Current Portal</span>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
               role === 'admin' 
-                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' 
-                : 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
             }`}>
               {role === 'admin' ? 'HR Administrator' : 'Staff Portal'}
             </span>
           </div>
-          <p className="text-xs text-slate-200 font-medium mt-1 truncate">{user?.name || 'Guest User'}</p>
+          <p className="text-xs text-slate-100 font-medium mt-1 truncate">{user?.name || 'Guest User'}</p>
           <p className="text-[11px] text-slate-400 truncate">{user?.jobDetails.title}</p>
         </div>
 
@@ -91,17 +91,17 @@ export const Sidebar: React.FC = () => {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/50'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-cyan-600/80 text-white shadow-sm shadow-cyan-500/20'
+                    : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-100'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-100' : 'text-slate-500'}`} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
-                    isActive ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    isActive ? 'bg-cyan-700/60 text-cyan-100' : 'bg-slate-700/60 text-slate-400 border border-slate-600/50'
                   }`}>
                     {item.badge}
                   </span>
@@ -113,9 +113,9 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Info Box */}
-      <div className="p-3 border-t border-white/10">
-        <div className="sidebar-image-box rounded-lg p-2.5 text-[11px] text-slate-300">
-          <div className="flex items-center gap-1.5 text-indigo-300 font-medium mb-1">
+      <div className="p-3 border-t border-slate-700/50">
+        <div className="sidebar-image-box rounded-lg p-2.5 text-[11px] text-slate-400 bg-slate-800/60/40 border border-slate-700/30 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 text-cyan-400 font-medium mb-1">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Full-Stack Architecture</span>
           </div>
@@ -127,3 +127,9 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
+
+
+
+
+
+

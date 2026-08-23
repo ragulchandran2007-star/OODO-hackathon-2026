@@ -132,8 +132,8 @@ export const AttendanceTracker: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Clock className="w-5 h-5 text-indigo-600" />
+          <h1 className="text-xl font-bold text-slate-100 tracking-tight flex items-center gap-2">
+            <Clock className="w-5 h-5 text-cyan-400" />
             Attendance Tracking & Timesheets
           </h1>
           <p className="text-xs text-slate-500">
@@ -147,7 +147,7 @@ export const AttendanceTracker: React.FC = () => {
           {isAdmin && (
             <button
               onClick={() => setShowManualModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
             >
               <Plus className="w-4 h-4" />
               Log Manual Attendance
@@ -161,7 +161,7 @@ export const AttendanceTracker: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
               <span className="text-xs uppercase tracking-wider font-semibold text-indigo-300">
                 Self-Service Attendance Punch
               </span>
@@ -181,7 +181,7 @@ export const AttendanceTracker: React.FC = () => {
               <button
                 onClick={handlePunchIn}
                 disabled={punchLoading}
-                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
                 {punchLoading ? 'Processing...' : 'Punch In (Check-In)'}
@@ -197,7 +197,7 @@ export const AttendanceTracker: React.FC = () => {
               </button>
             ) : (
               <div className="px-4 py-2.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-teal-300" />
                 Workday Shift Completed ({todayRecord.durationHours || 8} hrs)
               </div>
             )}
@@ -208,23 +208,23 @@ export const AttendanceTracker: React.FC = () => {
       {/* Employee Summary Stats (Count of days present / Leaves count / Total working days) */}
       {!isAdmin && employeeStats && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
-            <p className="text-2xl font-bold text-emerald-600">{employeeStats.presentDays}</p>
+          <div className="bg-slate-800/60/50 p-4 rounded-xl border border-slate-700/50 shadow-xs text-center">
+            <p className="text-2xl font-bold text-teal-400">{employeeStats.presentDays}</p>
             <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Count of Days Present</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
+          <div className="bg-slate-800/60/50 p-4 rounded-xl border border-slate-700/50 shadow-xs text-center">
             <p className="text-2xl font-bold text-amber-600">{employeeStats.leaveDays}</p>
             <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Leaves Count</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs text-center">
-            <p className="text-2xl font-bold text-slate-900">{employeeStats.totalWorkingDays}</p>
+          <div className="bg-slate-800/60/50 p-4 rounded-xl border border-slate-700/50 shadow-xs text-center">
+            <p className="text-2xl font-bold text-slate-100">{employeeStats.totalWorkingDays}</p>
             <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wide mt-1">Total Working Days</p>
           </div>
         </div>
       )}
 
       {/* Filter Controls for Admin / User */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-slate-800/60/50 p-4 rounded-xl border border-slate-700/50 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
           {isAdmin && (
             <>
@@ -235,14 +235,14 @@ export const AttendanceTracker: React.FC = () => {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Search by name or ID..."
-                  className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-indigo-600"
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-lg border border-slate-700/50 focus:outline-indigo-600"
                 />
               </div>
               <div className="w-full md:w-64">
                 <select
                   value={selectedEmployeeId}
                   onChange={e => setSelectedEmployeeId(e.target.value)}
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white"
+                  className="w-full text-xs p-2 rounded-lg border border-slate-700/50 bg-slate-800/60/50"
                 >
                   <option value="All">All Employees</option>
                   {employees.map(e => (
@@ -262,8 +262,8 @@ export const AttendanceTracker: React.FC = () => {
                 onClick={() => setSelectedStatus(st)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                   selectedStatus === st
-                    ? 'bg-indigo-600 text-white font-semibold'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200'
+                    ? 'bg-cyan-600 text-white font-semibold'
+                    : 'bg-slate-900/80/40 hover:bg-slate-800/60/40 text-slate-400 border border-slate-700/50'
                 }`}
               >
                 {st}
@@ -278,10 +278,10 @@ export const AttendanceTracker: React.FC = () => {
       </div>
 
       {/* Attendance Records Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-slate-800/60/50 rounded-xl border border-slate-700/50 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+            <thead className="bg-slate-900/80/40 border-b border-slate-700/50 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="px-5 py-3">Date</th>
                 <th className="px-5 py-3">Employee</th>
@@ -294,7 +294,7 @@ export const AttendanceTracker: React.FC = () => {
                 <th className="px-5 py-3">Location / Remarks</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-700/30">
               {loading ? (
                 <tr>
                   <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-xs text-slate-400">
@@ -309,30 +309,30 @@ export const AttendanceTracker: React.FC = () => {
                 </tr>
               ) : (
                 filteredRecords.map(record => (
-                  <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3 font-semibold text-slate-900 whitespace-nowrap">
+                  <tr key={record.id} className="hover:bg-slate-900/80/40 transition-colors">
+                    <td className="px-5 py-3 font-semibold text-slate-100 whitespace-nowrap">
                       {record.date}
                     </td>
                     <td className="px-5 py-3">
                       <div>
-                        <p className="font-semibold text-slate-900">{record.employeeName}</p>
+                        <p className="font-semibold text-slate-100">{record.employeeName}</p>
                         <p className="text-[10px] text-slate-400 font-mono">{record.employeeId}</p>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-slate-600">{record.department}</td>
+                    <td className="px-5 py-3 text-slate-400">{record.department}</td>
                     <td className="px-5 py-3 font-mono text-slate-800">
                       {record.checkInTime || <span className="text-slate-400">-</span>}
                     </td>
                     <td className="px-5 py-3 font-mono text-slate-800">
                       {record.checkOutTime || <span className="text-slate-400">-</span>}
                     </td>
-                    <td className="px-5 py-3 text-slate-700 font-medium">
+                    <td className="px-5 py-3 text-slate-300 font-medium">
                       {record.durationHours ? `${record.durationHours} hrs` : '-'}
                     </td>
                     {isAdmin && (
                       <td className="px-5 py-3 font-medium">
                         {getExtraHours(record) > 0 ? (
-                          <span className="text-emerald-700">+{getExtraHours(record)} hrs</span>
+                          <span className="text-teal-300">+{getExtraHours(record)} hrs</span>
                         ) : (
                           <span className="text-slate-400">-</span>
                         )}
@@ -340,9 +340,9 @@ export const AttendanceTracker: React.FC = () => {
                     )}
                     <td className="px-5 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                        record.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :
+                        record.status === 'Present' ? 'bg-teal-950/60 text-teal-300' :
                         record.status === 'Half-day' ? 'bg-blue-100 text-blue-800' :
-                        record.status === 'Leave' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                        record.status === 'Leave' ? 'bg-amber-950/60 text-amber-300' : 'bg-rose-100 text-rose-800'
                       }`}>
                         {record.status}
                       </span>
@@ -367,3 +367,10 @@ export const AttendanceTracker: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
